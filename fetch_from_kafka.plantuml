@@ -1,0 +1,59 @@
+@startuml
+
+title "Fetching data from Kafka"
+
+participant LoansListener as ll
+database Database as db
+database InternalDatabase as id
+queue Kafka as k
+
+ll -> k: read [loans]
+k -> ll: [loans]
+
+loop for each loan
+    alt user not found
+        ll -> db: assign loan to user
+        activate ll
+        activate db
+        db -> ll: user not found
+        deactivate db
+        ll -> id: store for later
+        deactivate ll
+    else user found
+        ll -> db: assign loan to user
+        activate ll
+        activate db
+        db -> ll: success
+        deactivate ll
+        deactivate db
+    end
+end
+...
+
+ll -> id: unassigned loans?
+activate id
+id -> ll: some [loans]
+deactivate id
+
+loop for each loan
+    alt user not found
+        ll -> db: assign loan to user
+        activate ll
+        activate db
+        db -> ll: user not found
+        deactivate db
+        note over db: TBD: send bunch of loans instead of one by one
+        ll -> k: unowned loan
+        deactivate ll
+    else user found
+        ll -> db: assign loan to user
+        activate ll
+        activate db
+        db -> ll: success
+        deactivate db
+        ll -> id: delete loan
+        deactivate ll
+    end
+end
+
+@enduml
