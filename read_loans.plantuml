@@ -1,0 +1,32 @@
+@startuml title
+
+queue Kafka as K
+participant LoansListener as LL
+database Database as DB
+
+participant DeadLettersQueue as DLQ
+
+==Read Loans save to DB==
+
+LL -> K: read loans
+activate LL
+group for each loan
+    LL -> DB : insert loan for existing customer
+    activate DB
+    DB -> LL: ok
+    deactivate DB
+end
+deactivate LL
+
+==Read Loans retry save to DB==
+
+LL -> K: read loans
+activate LL
+group for each loan
+    LL -> DB ++: insert loan for existing customer
+    return status
+end
+deactivate LL
+
+
+@enduml
