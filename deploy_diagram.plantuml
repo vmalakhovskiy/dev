@@ -1,0 +1,48 @@
+@startuml
+
+title "Deploy diagram"
+
+folder Clients {
+    component iOS as i
+    component Android as and
+}
+
+folder "Digital Backend" {
+    component "API Service" as a
+    component "Loans Consumer" as lc
+    component "Transactions Consumer" as tc
+    component "Customers Consumer" as cc
+    component "Payments Calendar Consumer" as pcc
+    
+    component "Notifications Scheduler" as ns
+    component "Notifications Gateway" as ng
+    
+    database Database as db
+}
+
+folder "Core Banking" {
+    queue Kafka as k
+    cloud "External Notifications Gateway" as eng
+}
+
+and -down-> a
+i -down-> a
+a -down-> db
+
+lc -up-> db
+tc -up-> db
+cc -up-> db
+pcc -up-> db
+
+ns -right-> db
+ng -right-> db
+
+ng -down-> eng
+
+lc -down-> k
+tc -down-> k
+cc -down-> k
+pcc -down-> k
+
+
+@enduml
